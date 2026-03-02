@@ -1,0 +1,16 @@
+# Ignore all node_modules anywhere
+node_modules/
+
+# Environment variables
+.env
+backend/.env
+
+# Logs
+*.log
+
+# Build folders
+build/
+dist/
+
+# OS files
+.DS_Store
