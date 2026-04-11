@@ -24,10 +24,10 @@ export const RoleProtectedRoute = ({ element, allowedRoles }) => {
     return <Navigate to="/login" replace />;
   }
 
-  const user = authService.getStoredUser();
-  const hasRole = allowedRoles.includes(user?.role);
-
-  if (!hasRole) {
+ const role = localStorage.getItem("role");
+const hasRole = allowedRoles.includes(role);
+ 
+if (!hasRole) {
     return <Navigate to="/unauthorized" replace />;
   }
 

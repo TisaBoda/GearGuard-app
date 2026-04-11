@@ -36,17 +36,35 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
   e.preventDefault();
+
   if (!form.email || !form.password) {
     setError("All fields are required.");
     return;
   }
+
   setLoading(true);
+
   try {
-    await authService.login(form.email, form.password);
+    const res = await authService.login(form.email, form.password);
+
+    console.log("LOGIN RESPONSE:", res.data);
+
+    const role =
+  res?.data?.user?.role ||
+  res?.data?.role ||
+  res?.data?.data?.user?.role ||
+  res?.user?.role ||
+  "Viewer";   // fallback
+
+    localStorage.setItem("role", role);
+    localStorage.setItem("token", res?.data?.token || res?.token);
+
     window.location.href = '/dashboard';
+
   } catch (err) {
     setError(err.message || "Invalid credentials.");
   }
+
   setLoading(false);
 };
 

@@ -4,6 +4,7 @@ import equipmentService from '../services/equipmentService';
 import teamService from '../services/teamService';
 
 export default function Dashboard() {
+  const role = localStorage.getItem("role");
   const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalEquipment: 0,
@@ -491,18 +492,34 @@ export default function Dashboard() {
           </div>
 
           <nav className="db-nav">
-            <div className="db-nav-label">Main Menu</div>
-            {navItems.map((item) => (
-              <div
-                key={item.path}
-                className={`db-nav-item ${window.location.pathname === item.path ? 'active' : ''}`}
-                onClick={() => navigate(item.path)}
-              >
-                <span className="db-nav-icon">{item.icon}</span>
-                {item.label}
-              </div>
-            ))}
-          </nav>
+  <div className="db-nav-label">Main Menu</div>
+
+  {navItems
+    .filter((item) => {
+      if (item.path === '/equipment' || item.path === '/teams') {
+        return role === 'Admin' || role === 'Manager';
+      }
+      if (item.path === '/reports') {
+        return role === 'Admin';
+      }
+      if (item.path === '/requests/kanban') {
+        return role === 'Admin' || role === 'Manager';
+      }
+      return true;
+    })
+    .map((item) => (
+      <div
+        key={item.path}
+        className={`db-nav-item ${
+          window.location.pathname === item.path ? 'active' : ''
+        }`}
+        onClick={() => navigate(item.path)}
+      >
+        <span className="db-nav-icon">{item.icon}</span>
+        {item.label}
+      </div>
+    ))}
+</nav>
 
           <div className="db-sidebar-footer">
             <div className="db-user-info">
@@ -628,7 +645,7 @@ export default function Dashboard() {
               </div>
 
               {/* Module Shortcuts */}
-              <div className="db-section-card">
+              {/* <div className="db-section-card">
                 <div className="db-section-header">🧭 Navigate Modules</div>
                 <div className="db-section-body">
                   <div className="db-modules-grid">
@@ -651,8 +668,8 @@ export default function Dashboard() {
                       </div>
                     ))}
                   </div>
-                </div>
-              </div>
+                </div> 
+              </div> */}
             </>
           )}
         </main>

@@ -6,7 +6,9 @@ export default function KanbanBoard() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [draggedId, setDraggedId] = useState(null);
+  const [search, setSearch] = useState("");
   const navigate = useNavigate();
+  const [dragOverCol, setDragOverCol] = useState(null);
 
   const columns = ['New', 'Assigned', 'In Progress', 'Repaired', 'Scrapped'];
 
@@ -21,7 +23,11 @@ export default function KanbanBoard() {
   };
 
   const getByStatus = (status) =>
-    requests.filter((r) => r.status === status);
+    requests
+  .filter((r) => r.status === status)
+  .filter((r) =>
+    r.subject?.toLowerCase().includes(search.toLowerCase())
+  )
 
   const handleDragStart = (id) => setDraggedId(id);
 
@@ -128,19 +134,27 @@ export default function KanbanBoard() {
           font-family: 'Barlow Condensed', sans-serif;
           font-weight: 700;
         }
-        .kb-col-body {
-          padding: 12px;
-          min-height: 400px;
-        }
+.kb-col-body {
+  padding: 12px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
         .kb-card {
-          background: #1a1a1a;
-          border: 1px solid #2a2a2a;
-          border-left: 3px solid var(--priority-color);
-          padding: 14px;
-          margin-bottom: 10px;
-          cursor: grab;
-          transition: border-color 0.2s, transform 0.2s;
-        }
+  background: #181818;
+  border: 1px solid #2a2a2a;
+  border-left: 4px solid var(--priority-color);
+  padding: 16px;
+  margin-bottom: 12px;
+  cursor: grab;
+  transition: all 0.2s ease;
+  border-radius: 6px;
+}
+
+.kb-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--priority-color);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+}
         .kb-card:hover {
           border-color: #f0a500;
           transform: translateY(-2px);
@@ -222,11 +236,28 @@ export default function KanbanBoard() {
 
       <div className="kb-root">
         <div className="kb-header">
-          <h1 className="kb-title">Kanban <span>Board</span></h1>
-          <button className="kb-btn" onClick={() => navigate('/requests/new')}>
-            + New Request
-          </button>
-        </div>
+  <div>
+    <h1 className="kb-title">Kanban <span>Board</span></h1>
+
+    <input
+      placeholder="Search requests..."
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
+      style={{
+        marginTop: "10px",
+        padding: "8px 12px",
+        background: "#1a1a1a",
+        border: "1px solid #2a2a2a",
+        color: "#fff",
+        width: "250px"
+      }}
+    />
+  </div>
+
+  <button className="kb-btn" onClick={() => navigate('/requests/new')}>
+    + New Request
+  </button>
+</div>
 
         {loading ? (
           <div className="kb-loading">Loading Board...</div>
@@ -237,8 +268,14 @@ export default function KanbanBoard() {
                 key={col}
                 className="kb-col"
                 style={{ '--col-color': columnColor(col) }}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={() => handleDrop(col)}
+                onDragOver={(e) => {
+  e.preventDefault();
+  setDragOverCol(col);
+}}
+onDrop={() => {
+  handleDrop(col);
+  setDragOverCol(null);
+}}
               >
                 <div className="kb-col-header">
                   <div className="kb-col-title">{col}</div>
