@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import equipmentService from '../services/equipmentService';
 import teamService from '../services/teamService';
+import requestService from '../services/requestService';
 
 export default function Dashboard() {
   const role = localStorage.getItem("role");
@@ -20,21 +21,42 @@ export default function Dashboard() {
   }, []);
 
   const fetchStats = async () => {
-    try {
-      const [equipmentRes, teamsRes] = await Promise.all([
-        equipmentService.getAllEquipment(),
-        teamService.getAllTeams(),
-      ]);
-      setStats((prev) => ({
-        ...prev,
-        totalEquipment: equipmentRes.data?.length || 0,
-        teams: teamsRes.data?.length || 0,
-      }));
-    } catch (err) {
-      console.error('Failed to load stats');
-    }
-    setLoading(false);
-  };
+  try {
+    const [equipmentRes, teamsRes, requestsRes] = await Promise.all([
+      equipmentService.getAllEquipment(),
+      teamService.getAllTeams(),
+      requestService.getAllRequests(),
+    ]);
+
+    // backend returns { success:true, data:[...] }
+    const equipment = equipmentRes?.data || [];
+    const teams = teamsRes?.data || [];
+    const requests = requestsRes?.data || []; // important
+
+    // Active = not Repaired and not Scrapped
+    const activeRequests = requests.filter(
+      (r) => !['Repaired', 'Scrapped'].includes(r.status)
+    ).length;
+
+    // Completed = Repaired this month
+    const now = new Date();
+    const completedThisMonth = requests.filter((r) => {
+      if (r.status !== 'Repaired') return false;
+      const d = new Date(r.updatedAt || r.completedDate || r.createdAt);
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    }).length;
+
+    setStats({
+      totalEquipment: equipment.length,
+      teams: teams.length,
+      activeRequests,
+      completed: completedThisMonth,
+    });
+  } catch (err) {
+    console.error('Failed to load stats', err);
+  }
+  setLoading(false);
+};
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -643,33 +665,6 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
-
-              {/* Module Shortcuts */}
-              {/* <div className="db-section-card">
-                <div className="db-section-header">🧭 Navigate Modules</div>
-                <div className="db-section-body">
-                  <div className="db-modules-grid">
-                    {[
-                      { icon: '🔧', name: 'Equipment', desc: 'Manage all assets', path: '/equipment' },
-                      { icon: '📋', name: 'Requests', desc: 'Track maintenance', path: '/requests' },
-                      { icon: '👥', name: 'Teams', desc: 'Manage technicians', path: '/teams' },
-                      { icon: '📅', name: 'Calendar', desc: 'Schedule maintenance', path: '/calendar' },
-                      { icon: '📊', name: 'Reports', desc: 'View analytics', path: '/reports' },
-                      { icon: '⚙️', name: 'Settings', desc: 'App configuration', path: '/settings' },
-                    ].map((mod) => (
-                      <div
-                        key={mod.name}
-                        className="db-module-card"
-                        onClick={() => navigate(mod.path)}
-                      >
-                        <div className="db-module-icon">{mod.icon}</div>
-                        <div className="db-module-name">{mod.name}</div>
-                        <div className="db-module-desc">{mod.desc}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div> 
-              </div> */}
             </>
           )}
         </main>

@@ -26,6 +26,8 @@ export default function RequestForm() {
   const [technicianList, setTechnicianList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [imageFile, setImageFile] = useState(null);
+const [imagePreview, setImagePreview] = useState('');
 
   useEffect(() => {
     fetchDropdowns();
@@ -33,17 +35,22 @@ export default function RequestForm() {
   }, [id]);
 
   const fetchDropdowns = async () => {
-    try {
-      const [eqRes, teamRes] = await Promise.all([
-        equipmentService.getAllEquipment(),
-        teamService.getAllTeams(),
-      ]);
-      setEquipmentList(eqRes.data || []);
-      setTeamList(teamRes.data || []);
-    } catch {
-      setError('Failed to load form data');
-    }
-  };
+  try {
+    const [eqRes, teamRes] = await Promise.all([
+      equipmentService.getAllEquipment(),
+      teamService.getAllTeams(),
+    ]);
+
+    // Works if backend returns [] OR {success:true, data:[]}
+    const equipmentArray = Array.isArray(eqRes) ? eqRes : (eqRes.data || []);
+    const teamArray = Array.isArray(teamRes) ? teamRes : (teamRes.data || []);
+
+    setEquipmentList(equipmentArray);
+    setTeamList(teamArray);
+  } catch {
+    setError('Failed to load form data');
+  }
+};
 
   const fetchRequest = async () => {
     try {
@@ -101,25 +108,69 @@ export default function RequestForm() {
     setError('');
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!formData.subject || !formData.equipmentId || !formData.requestType) {
-      setError('Subject, Equipment and Request Type are required!');
-      return;
+  const onImageChange = (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  // validate type
+  if (!file.type.startsWith('image/')) {
+    setError('Only image files are allowed');
+    return;
+  }
+  // validate size (5MB)
+  if (file.size > 5 * 1024 * 1024) {
+    setError('Image must be <= 5MB');
+    return;
+  }
+
+  setImageFile(file);
+  setImagePreview(URL.createObjectURL(file));
+};
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  // frontend validation
+  if (!formData.subject?.trim() || !formData.equipmentId || !formData.requestType) {
+    setError('Subject, Equipment and Request Type are required!');
+    return;
+  }
+
+  setLoading(true);
+  setError('');
+
+  try {
+    const fd = new FormData();
+
+    // MUST match backend field names exactly
+    fd.append('subject', formData.subject.trim());
+    fd.append('description', formData.description || '');
+    fd.append('requestType', formData.requestType);     // "Corrective" or "Preventive"
+    fd.append('equipmentId', formData.equipmentId);     // must be Mongo _id string
+
+    // optional fields (append only if present)
+    if (formData.teamId) fd.append('teamId', formData.teamId);
+    if (formData.assignedTechnicianId) fd.append('assignedTechnicianId', formData.assignedTechnicianId);
+
+    fd.append('priority', formData.priority || 'Medium');
+    fd.append('status', formData.status || 'New');
+    if (formData.scheduledDate) fd.append('scheduledDate', formData.scheduledDate);
+
+    if (imageFile) fd.append('image', imageFile);
+
+    // IMPORTANT: send FormData
+    if (isEditing) {
+      await requestService.updateRequest(id, fd); // only if backend supports upload on update
+    } else {
+      await requestService.createRequest(fd);
     }
-    setLoading(true);
-    try {
-      if (isEditing) {
-        await requestService.updateRequest(id, formData);
-      } else {
-        await requestService.createRequest(formData);
-      }
-      navigate('/requests');
-    } catch (err) {
-      setError(err.response?.data?.message || 'Something went wrong');
-      setLoading(false);
-    }
-  };
+
+    navigate('/requests');
+  } catch (err) {
+    setError(err.response?.data?.message || err.message || 'Something went wrong');
+    setLoading(false);
+  }
+};
 
   return (
     <>
@@ -473,26 +524,52 @@ export default function RequestForm() {
                 )}
 
                 {/* Description */}
-                <div className="rf-group rf-grid-full">
-                  <label className="rf-label">Description</label>
-                  <textarea
-                    className="rf-textarea"
-                    name="description"
-                    value={formData.description}
-                    onChange={handleChange}
-                    placeholder="Describe the issue or maintenance needed..."
-                  />
-                </div>
+                {/* Description */}
+<div className="rf-group rf-grid-full">
+  <label className="rf-label">Description</label>
+  <textarea
+    className="rf-textarea"
+    name="description"
+    value={formData.description}
+    onChange={handleChange}
+    placeholder="Describe the issue or maintenance needed..."
+  />
+</div>
+
+{/* Damage Photo - directly under Description */}
+<div className="rf-group rf-grid-full">
+  <label className="rf-label">Damage Photo (optional)</label>
+
+  <input
+    className="rf-input"
+    type="file"
+    accept="image/*"
+    onChange={onImageChange}
+  />
+
+  {imagePreview && (
+    <div style={{ marginTop: 12 }}>
+      <img
+        src={imagePreview}
+        alt="Damage preview"
+        style={{
+          width: '100%',
+          maxHeight: 260,
+          objectFit: 'cover',
+          borderRadius: 8,
+          border: '1px solid #2a2a2a',
+        }}
+      />
+    </div>
+  )}
+</div>
 
               </div>
-            </form>
-          </div>
-
           <div className="rf-actions">
             <button className="rf-cancel" onClick={() => navigate('/requests')}>
               Cancel
             </button>
-            <button
+            {/* <button
               className="rf-submit"
               onClick={handleSubmit}
               disabled={loading}
@@ -503,7 +580,10 @@ export default function RequestForm() {
                 : isEditing
                 ? 'Update Request'
                 : 'Create Request'}
-            </button>
+            </button> */}
+            <button className="rf-submit" type="submit" disabled={loading}>Submit</button>
+          </div>
+           </form>
           </div>
         </div>
       </div>

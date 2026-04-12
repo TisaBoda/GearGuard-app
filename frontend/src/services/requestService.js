@@ -23,9 +23,17 @@ const getRequestById = async (id) => {
   return response.data;
 };
 
-// Create request
 const createRequest = async (requestData) => {
-  const response = await axios.post(API_URL, requestData, getConfig());
+  const token = localStorage.getItem('token');
+
+  const response = await axios.post(API_URL, requestData, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      // DO NOT set Content-Type manually
+      // axios will set: multipart/form-data; boundary=...
+    },
+  });
+
   return response.data;
 };
 

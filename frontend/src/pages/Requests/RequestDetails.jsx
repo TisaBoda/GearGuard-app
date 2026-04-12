@@ -12,15 +12,16 @@ export default function RequestDetails() {
 
   useEffect(() => { fetchRequest(); }, [id]);
 
-  const fetchRequest = async () => {
-    try {
-      const res = await requestService.getRequestById(id);
-      setRequest(res.data);
-    } catch {
-      setError('Failed to load request details');
-    }
-    setLoading(false);
-  };
+const fetchRequest = async () => {
+  try {
+    const res = await requestService.getRequestById(id);
+    const reqObj = res?.data ? res.data : res; // ✅ handle both shapes
+    setRequest(reqObj);
+  } catch {
+    setError('Failed to load request details');
+  }
+  setLoading(false);
+};
 
   const handleStatusUpdate = async (newStatus) => {
     setUpdating(true);
@@ -395,7 +396,7 @@ export default function RequestDetails() {
             </div>
           </div>
 
-          {/* Info Grid */}
+        {/* Info Grid */}
           <div className="rd-info-grid">
             <div className="rd-info-item">
               <div className="rd-info-label">Equipment</div>
@@ -445,6 +446,25 @@ export default function RequestDetails() {
               <p className="rd-desc-text">{request.description}</p>
             </div>
           )}
+          {request?.image && (
+  <div className="rd-desc-section" style={{ paddingTop: 0 }}>
+    <div className="rd-info-label" style={{ marginBottom: '8px' }}>
+      Damage Photo
+    </div>
+
+    <img
+      src={`http://localhost:5000${request.image}`}
+      alt="Damage"
+      style={{
+        width: '100%',
+        maxWidth: 800,
+        borderRadius: 10,
+        border: '1px solid #2a2a2a',
+        objectFit: 'cover',
+      }}
+    />
+  </div>
+)}
         </div>
 
         {/* Status Update Card */}
@@ -510,7 +530,7 @@ export default function RequestDetails() {
                 </>
               )}
             </div>
-          </div>
+         </div>
         </div>
       </div>
     </>

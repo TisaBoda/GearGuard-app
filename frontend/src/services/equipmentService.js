@@ -10,7 +10,11 @@ const getHeaders = () => ({
 const getAllEquipment = async (filters = {}) => {
   const query = new URLSearchParams(filters).toString();
   const res = await fetch(`${API_URL}?${query}`, { headers: getHeaders() });
-  return res.json();
+  const json = await res.json();
+
+  // normalize to { success, data }
+  if (Array.isArray(json)) return { success: true, data: json };
+  return json;
 };
 
 const getEquipment = async (id) => {

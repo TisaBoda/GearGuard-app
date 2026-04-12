@@ -1,5 +1,9 @@
 const express = require('express');
 const router = express.Router();
+
+const upload = require('../middleware/upload');
+const { protect } = require('../middleware/authMiddleware');
+
 const {
   getAllRequests,
   getRequestById,
@@ -9,19 +13,20 @@ const {
   updateStatus,
   getCalendarRequests,
 } = require('../controllers/requestController');
-const { protect } = require('../middleware/authMiddleware');
 
 // Calendar route (before /:id to avoid conflict)
 router.get('/calendar', protect, getCalendarRequests);
 
-// Main routes
+// Single correct main route (multer attached)
 router.route('/')
   .get(protect, getAllRequests)
-  .post(protect, createRequest);
-
+  .post(protect, upload.single('image'), createRequest);
+  
+// Single ID route
 router.route('/:id')
   .get(protect, getRequestById)
-  .put(protect, updateRequest)
+  .put(protect, upload.single('image'), updateRequest)
+  // .put(protect, updateRequest)          // (no image on update unless you add upload.single here)
   .delete(protect, deleteRequest);
 
 // Status update

@@ -10,6 +10,7 @@ const getAllRequests = async (req, res) => {
       .populate('assignedTechnicianId', 'fullName email')
       .populate('createdBy', 'fullName')
       .sort({ createdAt: -1 });
+
     res.status(200).json({ success: true, data: requests });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -24,6 +25,7 @@ const getRequestById = async (req, res) => {
       .populate('teamId', 'teamName specialization')
       .populate('assignedTechnicianId', 'fullName email role')
       .populate('createdBy', 'fullName email');
+
     if (!request) {
       return res.status(404).json({ success: false, message: 'Request not found' });
     }
@@ -33,22 +35,34 @@ const getRequestById = async (req, res) => {
   }
 };
 
-// POST create request
+// POST create request (with image)
 const createRequest = async (req, res) => {
   try {
     const {
-      subject, description, requestType,
-      equipmentId, teamId, assignedTechnicianId,
-      priority, scheduledDate,
+      subject,
+      description,
+      requestType,
+      equipmentId,
+      teamId,
+      assignedTechnicianId,
+      priority,
+      scheduledDate,
+      status,
     } = req.body;
 
+    // ✅ multer file
+    const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
+
+    // ✅ sanitize optional ObjectId fields (avoid "" cast errors)
+    const safeTeamId = teamId && teamId !== '' ? teamId : undefined;
+    const safeAssignedTechnicianId =
+      assignedTechnicianId && assignedTechnicianId !== '' ? assignedTechnicianId : undefined;
+
     // Auto-fill teamId from equipment if not provided
-    let resolvedTeamId = teamId;
+    let resolvedTeamId = safeTeamId;
     if (!resolvedTeamId && equipmentId) {
       const equipment = await Equipment.findById(equipmentId);
-      if (equipment?.teamId) {
-        resolvedTeamId = equipment.teamId;
-      }
+      if (equipment?.teamId) resolvedTeamId = equipment.teamId;
     }
 
     const request = await MaintenanceRequest.create({
@@ -57,9 +71,11 @@ const createRequest = async (req, res) => {
       requestType,
       equipmentId,
       teamId: resolvedTeamId,
-      assignedTechnicianId,
+      assignedTechnicianId: safeAssignedTechnicianId,
       priority,
-      scheduledDate,
+      status: status || 'New',
+      scheduledDate: scheduledDate || undefined,
+      image: imagePath,
       createdBy: req.user._id,
     });
 
@@ -72,7 +88,6 @@ const createRequest = async (req, res) => {
 // PUT update request
 const updateRequest = async (req, res) => {
   try {
-    // Calculate total cost if parts/labor cost provided
     if (req.body.partsCost || req.body.laborCost) {
       req.body.totalCost =
         (Number(req.body.partsCost) || 0) +
@@ -84,6 +99,7 @@ const updateRequest = async (req, res) => {
       req.body,
       { new: true, runValidators: true }
     );
+
     if (!request) {
       return res.status(404).json({ success: false, message: 'Request not found' });
     }
@@ -116,17 +132,14 @@ const updateStatus = async (req, res) => {
     }
 
     const updateData = { status };
-
-    // If status is Repaired set completedDate
-    if (status === 'Repaired') {
-      updateData.completedDate = new Date();
-    }
+    if (status === 'Repaired') updateData.completedDate = new Date();
 
     const request = await MaintenanceRequest.findByIdAndUpdate(
       req.params.id,
       updateData,
       { new: true }
     );
+
     if (!request) {
       return res.status(404).json({ success: false, message: 'Request not found' });
     }
@@ -144,6 +157,7 @@ const getCalendarRequests = async (req, res) => {
     })
       .populate('equipmentId', 'equipmentName')
       .select('subject requestType scheduledDate status priority');
+
     res.status(200).json({ success: true, data: requests });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

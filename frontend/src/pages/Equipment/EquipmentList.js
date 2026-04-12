@@ -13,6 +13,7 @@ export default function EquipmentList() {
 
   useEffect(() => {
     fetchEquipment();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [category, status]);
 
   const fetchEquipment = async () => {
@@ -20,8 +21,10 @@ export default function EquipmentList() {
     const filters = {};
     if (category !== 'All') filters.category = category;
     if (status !== 'All') filters.status = status;
-    const data = await equipmentService.getAllEquipment(filters);
-    setEquipment(data);
+
+    // now service returns { success, data }
+    const res = await equipmentService.getAllEquipment(filters);
+    setEquipment(res.data || []);
     setLoading(false);
   };
 
@@ -48,7 +51,7 @@ export default function EquipmentList() {
         @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Barlow:wght@300;400;500&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         .el-root { min-height: 100vh; background: #0d0d0d; color: #fff; font-family: 'Barlow', sans-serif; padding: 32px; }
-        .el-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; }
+        .el-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; flex-wrap: wrap; gap: 12px; }
         .el-title { font-family: 'Barlow Condensed', sans-serif; font-size: 36px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; }
         .el-title span { color: #f0a500; }
         .el-btn { background: #f0a500; color: #000; border: none; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 12px 24px; cursor: pointer; transition: background 0.2s; }
@@ -80,7 +83,12 @@ export default function EquipmentList() {
         </div>
 
         <div className="el-filters">
-          <input className="el-search" placeholder="Search by name or serial number..." value={search} onChange={e => setSearch(e.target.value)} />
+          <input
+            className="el-search"
+            placeholder="Search by name or serial number..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
           <select className="el-select" value={category} onChange={e => setCategory(e.target.value)}>
             {CATEGORIES.map(c => <option key={c}>{c}</option>)}
           </select>
@@ -109,7 +117,7 @@ export default function EquipmentList() {
               </thead>
               <tbody>
                 {filtered.map(eq => (
-                  <tr key={eq._id}>
+                  <tr key={eq._id || eq.id}>
                     <td style={{ color: '#fff', fontWeight: 500 }}>{eq.equipmentName}</td>
                     <td style={{ color: '#666', fontFamily: 'monospace' }}>{eq.serialNumber}</td>
                     <td>{eq.category}</td>
@@ -121,9 +129,9 @@ export default function EquipmentList() {
                       </span>
                     </td>
                     <td>
-                      <button className="el-action" onClick={() => window.location.href = `/equipment/${eq._id}`}>View</button>
-                      <button className="el-action" onClick={() => window.location.href = `/equipment/edit/${eq._id}`}>Edit</button>
-                      <button className="el-action del" onClick={() => handleDelete(eq._id)}>Delete</button>
+                      <button className="el-action" onClick={() => window.location.href = `/equipment/${eq._id || eq.id}`}>View</button>
+                      <button className="el-action" onClick={() => window.location.href = `/equipment/edit/${eq._id || eq.id}`}>Edit</button>
+                      <button className="el-action del" onClick={() => handleDelete(eq._id || eq.id)}>Delete</button>
                     </td>
                   </tr>
                 ))}

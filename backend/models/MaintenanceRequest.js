@@ -45,6 +45,10 @@ const maintenanceRequestSchema = new mongoose.Schema(
     partsCost: { type: Number, default: 0 },
     laborCost: { type: Number, default: 0 },
     totalCost: { type: Number, default: 0 },
+     imageUrl: { // NEW: For image uploads
+      type: String,
+      default: null,
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
