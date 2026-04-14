@@ -28,14 +28,27 @@ export default function Dashboard() {
       requestService.getAllRequests(),
     ]);
 
-    const equipment = equipmentRes?.data || [];
-    const teams = teamsRes?.data || [];
-    const requests = requestsRes?.data || [];
+    const equipmentRaw = equipmentRes?.data ?? equipmentRes;
+    const teamsRaw = teamsRes?.data ?? teamsRes;
+    const requestsRaw = requestsRes?.data ?? requestsRes;
 
+    const equipment = Array.isArray(equipmentRaw) ? equipmentRaw : (equipmentRaw?.data || []);
+    const teams = Array.isArray(teamsRaw) ? teamsRaw : (teamsRaw?.data || []);
+    const requests = Array.isArray(requestsRaw) ? requestsRaw : (requestsRaw?.data || []);
+
+    // ✅ Recent requests
+    setRecentRequests(
+      [...requests]
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 5)
+    );
+
+    // ✅ Active requests count
     const activeRequests = requests.filter(
       (r) => !['Repaired', 'Scrapped'].includes(r.status)
     ).length;
 
+    // ✅ Completed (Repaired) this month
     const now = new Date();
     const completedThisMonth = requests.filter((r) => {
       if (r.status !== 'Repaired') return false;
@@ -43,7 +56,7 @@ export default function Dashboard() {
       return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
     }).length;
 
-    // ✅ add this
+    // ✅ Status counts
     const counts = { New: 0, Assigned: 0, 'In Progress': 0, Repaired: 0, Scrapped: 0 };
     requests.forEach((r) => {
       const s = r.status;
@@ -51,6 +64,7 @@ export default function Dashboard() {
     });
     setStatusCounts(counts);
 
+    // ✅ Top stat cards
     setStats({
       totalEquipment: equipment.length,
       teams: teams.length,
@@ -59,9 +73,11 @@ export default function Dashboard() {
     });
   } catch (err) {
     console.error('Failed to load stats', err);
+  } finally {
+    setLoading(false);
   }
-  setLoading(false);
 };
+
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -128,6 +144,8 @@ export default function Dashboard() {
   Scrapped: 0,
 });
 
+  const [recentRequests, setRecentRequests] = useState([]);
+  
   return (
     <>
       <style>{`
@@ -620,25 +638,72 @@ export default function Dashboard() {
 
               {/* Bottom Grid */}
               <div className="db-bottom-grid">
-                {/* Quick Actions */}
-                <div className="db-section-card">
-                  <div className="db-section-header">⚡ Quick Actions</div>
-                  <div className="db-section-body">
-                    <div className="db-quick-actions">
-                      {quickActions.map((action) => (
-                        <button
-                          key={action.label}
-                          className="db-quick-btn"
-                          style={{ '--btn-color': action.color }}
-                          onClick={() => navigate(action.path)}
-                        >
-                          <div className="db-quick-icon">{action.icon}</div>
-                          <div className="db-quick-label">{action.label}</div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+                 {/* Recent Requests */}
+<div className="db-section-card">
+  <div className="db-section-header">🕒 Recent Requests</div>
+
+  <div className="db-section-body">
+    {recentRequests.length === 0 ? (
+      <div style={{ color: '#444', fontSize: 13 }}>No requests yet.</div>
+    ) : (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {recentRequests.map((r) => (
+          <div
+            key={r._id}
+            onClick={() => navigate(`/requests/${r._id}`)}
+            style={{
+              cursor: 'pointer',
+              padding: 14,
+              background: '#1a1a1a',
+              border: '1px solid #2a2a2a',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: 12,
+            }}
+          >
+            <div style={{ minWidth: 0 }}>
+              <div
+                style={{
+                  color: '#fff',
+                  fontFamily: 'Barlow Condensed, sans-serif',
+                  fontWeight: 800,
+                  letterSpacing: 1,
+                  textTransform: 'uppercase',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
+                {r.subject || 'Untitled'}
+              </div>
+
+              <div style={{ color: '#666', fontSize: 12, marginTop: 4 }}>
+                {r.equipmentId?.equipmentName ? `Equipment: ${r.equipmentId.equipmentName}` : '—'}
+                {' • '}
+                {new Date(r.createdAt).toLocaleDateString()}
+              </div>
+            </div>
+
+            <div
+              style={{
+                border: '1px solid #8b5cf6',
+                color: '#8b5cf6',
+                padding: '4px 10px',
+                fontSize: 11,
+                letterSpacing: 1,
+                textTransform: 'uppercase',
+                flexShrink: 0,
+              }}
+            >
+              {r.status}
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+</div>
 
                 {/* Request Status Overview */}
                 <div className="db-section-card">
