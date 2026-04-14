@@ -2,9 +2,38 @@ const MaintenanceRequest = require('../models/MaintenanceRequest');
 const Equipment = require('../models/Equipment');
 
 // GET all requests
+// const getAllRequests = async (req, res) => {
+//   try {
+//     const requests = await MaintenanceRequest.find()
+//       .populate('equipmentId', 'equipmentName serialNumber category')
+//       .populate('teamId', 'teamName specialization')
+//       .populate('assignedTechnicianId', 'fullName email')
+//       .populate('createdBy', 'fullName')
+//       .sort({ createdAt: -1 });
+
+//     res.status(200).json({ success: true, data: requests });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// GET all requests (supports filters)
 const getAllRequests = async (req, res) => {
   try {
-    const requests = await MaintenanceRequest.find()
+    const filter = {};
+
+    // ✅ filter by equipment
+    if (req.query.equipmentId) {
+      filter.equipmentId = req.query.equipmentId;
+    }
+
+    // ✅ openOnly=true => exclude closed statuses
+    if (req.query.openOnly === 'true') {
+      filter.status = { $nin: ['Repaired', 'Scrapped'] };
+    }
+
+
+    const requests = await MaintenanceRequest.find(filter)
       .populate('equipmentId', 'equipmentName serialNumber category')
       .populate('teamId', 'teamName specialization')
       .populate('assignedTechnicianId', 'fullName email')

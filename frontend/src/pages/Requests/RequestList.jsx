@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import requestService from '../../services/requestService';
+import { useLocation } from 'react-router-dom';
 
 export default function RequestList() {
   const [requests, setRequests] = useState([]);
@@ -9,17 +10,46 @@ export default function RequestList() {
   const [filter, setFilter] = useState('All');
   const navigate = useNavigate();
 
-  useEffect(() => { fetchRequests(); }, []);
+  
+  const location = useLocation();
+const equipmentId = new URLSearchParams(location.search).get('equipmentId');
+
+  // useEffect(() => { fetchRequests(); }, []);
+  useEffect(() => {
+  fetchRequests();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [equipmentId]);
+
+  // const fetchRequests = async () => {
+  //   try {
+  //     const response = await requestService.getAllRequests();
+  //     setRequests(response.data);
+  //   } catch {
+  //     setError('Failed to load requests');
+  //   }
+  //   setLoading(false);
+  // };
 
   const fetchRequests = async () => {
-    try {
-      const response = await requestService.getAllRequests();
-      setRequests(response.data);
-    } catch {
-      setError('Failed to load requests');
-    }
+  try {
+    setLoading(true);
+    setError('');
+
+    const response = await requestService.getAllRequests(
+      equipmentId ? { equipmentId } : {}
+    );
+
+    // backend returns { success:true, data:[...] }
+    const payload = response?.data ?? response;
+    const list = payload?.data ?? payload;
+
+    setRequests(Array.isArray(list) ? list : []);
+  } catch {
+    setError('Failed to load requests');
+  } finally {
     setLoading(false);
-  };
+  }
+};
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this request?')) {
@@ -283,6 +313,47 @@ export default function RequestList() {
 
       <div className="rl-root">
         <div className="rl-header">
+{equipmentId && (
+  <div
+    style={{
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      gap: 12,
+      margin: '0 0 18px',
+      padding: '10px 14px',
+      border: '1px solid #1e1e1e',
+      background: '#111',
+      color: '#bbb',
+      fontSize: 13,
+    }}
+  >
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+      <span style={{ color: '#f0a500', fontWeight: 700, letterSpacing: 1 }}>
+        FILTER
+      </span>
+      <span>Showing requests for selected equipment.</span>
+    </div>
+
+    <button
+      style={{
+        background: 'none',
+        border: '1px solid #2a2a2a',
+        color: '#fff',
+        padding: '8px 12px',
+        cursor: 'pointer',
+        fontFamily: 'Barlow Condensed, sans-serif',
+        fontSize: 12,
+        fontWeight: 700,
+        letterSpacing: 2,
+        textTransform: 'uppercase',
+      }}
+      onClick={() => navigate('/requests')}
+    >
+      Clear filter
+    </button>
+  </div>
+)}
           <h1 className="rl-title">
             Maintenance <span>Requests</span>
           </h1>

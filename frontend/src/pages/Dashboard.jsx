@@ -155,7 +155,7 @@ export default function Dashboard() {
         .db-root {
           display: flex;
           min-height: 100vh;
-          background: #0d0d0d;
+          background: #222225;
           font-family: 'Barlow', sans-serif;
         }
 
@@ -189,7 +189,7 @@ export default function Dashboard() {
           font-size: 10px;
           letter-spacing: 3px;
           text-transform: uppercase;
-          color: #333;
+          color: #bab5b5;
           margin-top: 4px;
         }
 
@@ -198,7 +198,7 @@ export default function Dashboard() {
           font-size: 10px;
           letter-spacing: 3px;
           text-transform: uppercase;
-          color: #333;
+          color: #bab5b5;
           padding: 0 24px;
           margin-bottom: 8px;
           margin-top: 16px;
@@ -213,7 +213,7 @@ export default function Dashboard() {
           border-left: 3px solid transparent;
           font-size: 14px;
           font-weight: 500;
-          color: #555;
+          color: #ffffff;
           text-decoration: none;
         }
         .db-nav-item:hover {
@@ -258,7 +258,7 @@ export default function Dashboard() {
         }
         .db-user-role {
           font-size: 11px;
-          color: #555;
+          color: #c1bfbf;
           text-transform: uppercase;
           letter-spacing: 1px;
         }
@@ -266,7 +266,7 @@ export default function Dashboard() {
           width: 100%;
           background: none;
           border: 1px solid #2a2a2a;
-          color: #555;
+          color: #ff0000;
           font-family: 'Barlow Condensed', sans-serif;
           font-size: 13px;
           font-weight: 700;
@@ -304,7 +304,7 @@ export default function Dashboard() {
         .db-page-title span { color: #f0a500; }
         .db-date {
           font-size: 13px;
-          color: #555;
+          color: #cccccc;
           margin-top: 6px;
         }
         .db-new-req-btn {
@@ -351,7 +351,7 @@ export default function Dashboard() {
           font-size: 11px;
           letter-spacing: 2px;
           text-transform: uppercase;
-          color: #555;
+          color: #e7d2d2;
           font-weight: 600;
         }
         .db-stat-icon {
@@ -450,7 +450,7 @@ export default function Dashboard() {
         }
         .db-status-label {
           font-size: 13px;
-          color: #888;
+          color: #e7d2d2;
           display: flex;
           align-items: center;
           gap: 10px;

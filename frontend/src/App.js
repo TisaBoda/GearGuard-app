@@ -19,7 +19,7 @@ import KanbanBoard from './pages/Requests/KanbanBoard';
 import CalendarView from './pages/Requests/CalendarView';
 
 import ReportsPage from './pages/Reports/ReportsPage';
-
+import CreateUser from './pages/user/createUser';
 import { RoleProtectedRoute } from './components/ProtectedRoute';
 
 import Unauthorized from './pages/Unauthorized';
@@ -194,6 +194,16 @@ function App() {
           }
         />
 
+        {/* 👥 USERS (ADMIN / MANAGER ONLY) */}
+<Route
+  path="/users/new"
+  element={
+    <RoleProtectedRoute
+      element={<CreateUser />}
+      allowedRoles={['Admin', 'Manager']}
+    />
+  }
+/>
       </Routes>
     </BrowserRouter>
   );

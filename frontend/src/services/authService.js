@@ -8,11 +8,15 @@ const API_URL = 'http://localhost:5000/api/auth';
 const getToken = () => localStorage.getItem('token');
 
 // ─── Helper: save token + user to localStorage ─────────────────────────────
+// const saveAuth = (token, user) => {
+//   localStorage.setItem('token', token);
+//   localStorage.setItem('user', JSON.stringify(user));
+// };
 const saveAuth = (token, user) => {
   localStorage.setItem('token', token);
   localStorage.setItem('user', JSON.stringify(user));
+  localStorage.setItem('role', user?.role || '');
 };
-
 // ─── Helper: clear auth data ───────────────────────────────────────────────
 const clearAuth = () => {
   localStorage.removeItem('token');
@@ -79,6 +83,38 @@ const logout = () => {
 
 // ─── GET CURRENT USER ──────────────────────────────────────────────────────
 // GET /api/auth/me  (requires token)
+// ─── GET ALL USERS (for team member dropdown) ──────────────────────────────
+// GET /api/auth/users?role=Technician
+// const getAllUsers = async (role = '') => {
+//   const token = getToken();
+//   const url = role ? `${API_URL}/users?role=${encodeURIComponent(role)}` : `${API_URL}/users`;
+
+//   const response = await fetch(url, {
+//     method: 'GET',
+//     headers: {
+//       'Content-Type': 'application/json',
+//       Authorization: `Bearer ${token}`,
+//     },
+//   });
+
+//   const data = await response.json();
+//   if (!response.ok) throw new Error(data.message || 'Failed to load users');
+
+//   return data; // { success: true, data: [...] }
+// };
+const getAllUsers = async (role = '') => {
+  const token = getToken();
+  const url = role ? `${API_URL}/users?role=${encodeURIComponent(role)}` : `${API_URL}/users`;
+
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || 'Failed to load users');
+  return data; // { success, data: [...] }
+};
+
 const getCurrentUser = async () => {
   try {
     const token = getToken();
@@ -137,6 +173,15 @@ const getStoredUser = () => {
 };
 
 // ─── EXPORT ────────────────────────────────────────────────────────────────
+// const authService = {
+//   register,
+//   login,
+//   logout,
+//   getCurrentUser,
+//   isLoggedIn,
+//   getStoredUser,
+//   getToken,
+// };
 const authService = {
   register,
   login,
@@ -145,6 +190,7 @@ const authService = {
   isLoggedIn,
   getStoredUser,
   getToken,
+  getAllUsers, // ✅ add this
 };
 
 export default authService;

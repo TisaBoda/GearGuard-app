@@ -12,9 +12,18 @@ const getConfig = () => {
 };
 
 // Get all requests
-const getAllRequests = async () => {
-  const response = await axios.get(API_URL, getConfig());
-  return response.data;
+// const getAllRequests = async () => {
+//   const response = await axios.get(API_URL, getConfig());
+//   return response.data;
+// };
+
+const getAllRequests = async (params = {}) => {
+  const token = localStorage.getItem('token');
+  const response = await axios.get(API_URL, {
+    params,
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data; // keep your current style
 };
 
 // Get single request

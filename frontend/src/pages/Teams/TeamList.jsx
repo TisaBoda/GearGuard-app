@@ -72,6 +72,8 @@ export default function TeamList() {
           font-family: 'Barlow Condensed', sans-serif;
           font-size: 15px;
           font-weight: 700;
+           align-items:center;
+  justify-content:flex-end;
           letter-spacing: 2px;
           text-transform: uppercase;
           padding: 12px 28px;
@@ -174,8 +176,9 @@ export default function TeamList() {
           cursor: pointer;
           transition: background 0.2s, color 0.2s;
           border-right: 1px solid #1e1e1e;
+          
         }
-        .tl-action-btn:last-child { border-right: none; }
+        .tl-action-btn:last-child { border-right: 1px solid #1e1e1e; }
         .tl-action-view { color: #10b981; }
         .tl-action-view:hover { background: rgba(16,185,129,0.1); }
         .tl-action-edit { color: #f0a500; }
@@ -211,9 +214,22 @@ export default function TeamList() {
       <div className="tl-root">
         <div className="tl-header">
           <h1 className="tl-title">Teams <span>Management</span></h1>
-          <button className="tl-btn" onClick={() => navigate('/teams/new')}>
+          
+          {/* <button className="tl-btn" onClick={() => navigate('/teams/new')}>
             + New Team
           </button>
+          <button className="tl-btn" onClick={() => navigate('/users/new')}>
+            + NEW USER
+          </button> */}
+          <div className="tl-actions">
+  <button className="tl-btn tl-btn-primary" onClick={() => navigate('/teams/new')}>
+    + NEW TEAM
+  </button>
+
+  <button className="tl-btn tl-btn-outline" onClick={() => navigate('/users/new')}>
+    + NEW USER
+  </button>
+</div>
         </div>
 
         {error && <div className="tl-error">{error}</div>}

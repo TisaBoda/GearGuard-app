@@ -1,19 +1,33 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import teamService from '../../services/teamService';
+import authService from '../../services/authService';
 
 export default function TeamDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const role = localStorage.getItem('role');
+const canManageTeam = role === 'Admin' || role === 'Manager';
 
+const [users, setUsers] = useState([]);
+const [selectedUserId, setSelectedUserId] = useState('');
+const [loadingUsers, setLoadingUsers] = useState(false);
   const [team, setTeam] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [userId, setUserId] = useState('');
+  // const [userId, setUserId] = useState('');
   const [addingMember, setAddingMember] = useState(false);
   const [memberError, setMemberError] = useState('');
 
-  useEffect(() => { fetchTeam(); }, [id]);
+//   useEffect(() => {
+//   fetchTeam();
+//   if (canManageTeam) fetchUsers();
+//   // eslint-disable-next-line react-hooks/exhaustive-deps
+// }, [id]);
+useEffect(() => {
+  fetchTeam();
+  if (canManageTeam) fetchUsers();
+}, [id]);
 
   const fetchTeam = async () => {
     try {
@@ -25,6 +39,17 @@ export default function TeamDetails() {
     setLoading(false);
   };
 
+  const fetchUsers = async () => {
+  try {
+    setLoadingUsers(true);
+    const res = await authService.getAllUsers('Technician'); // change case if your DB uses lowercase
+    setUsers(res.data || []);
+  } catch (e) {
+    setMemberError(e.message || 'Failed to load technicians');
+  } finally {
+    setLoadingUsers(false);
+  }
+};
   const handleAddMember = async () => {
     if (!userId.trim()) { setMemberError('Please enter a User ID'); return; }
     setAddingMember(true);
@@ -420,7 +445,7 @@ export default function TeamDetails() {
             </span>
           </div>
 
-          <div className="td-add-member">
+          {/* <div className="td-add-member">
             <input
               className="td-member-input"
               type="text"
@@ -435,7 +460,81 @@ export default function TeamDetails() {
             >
               {addingMember ? 'Adding...' : '+ Add Member'}
             </button>
-          </div>
+          </div> */}
+
+          {/* {canManageTeam && (
+  <div className="td-add-member">
+    <select
+      className="td-member-input"
+      value={selectedUserId}
+      onChange={(e) => setSelectedUserId(e.target.value)}
+      style={{ appearance: 'none' }}
+    >
+      <option value="">
+        {loadingUsers ? 'Loading technicians...' : 'Select technician to add...'}
+      </option>
+
+      {users.map((u) => (
+        <option key={u._id} value={u._id}>
+          {u.fullName} ({u.email})
+        </option>
+      ))}
+    </select>
+
+    <button
+      className="td-add-btn"
+      disabled={addingMember || !selectedUserId}
+      onClick={async () => {
+        if (!selectedUserId) {
+          setMemberError('Please select a technician');
+          return;
+        }
+        setAddingMember(true);
+        setMemberError('');
+        try {
+          await teamService.addMember(id, selectedUserId);
+          setSelectedUserId('');
+          fetchTeam();
+        } catch (err) {
+          setMemberError(err.response?.data?.message || 'Failed to add member');
+        } finally {
+          setAddingMember(false);
+        }
+      }}
+    >
+      {addingMember ? 'Adding...' : '+ Add Member'}
+    </button>
+  </div>
+)} */}
+
+          {canManageTeam && (
+  <div className="td-add-member">
+    <select
+      className="td-member-input"
+      value={selectedUserId}
+      onChange={(e) => setSelectedUserId(e.target.value)}
+    >
+      <option value="">Select technician...</option>
+      {users.map((u) => (
+        <option key={u._id} value={u._id}>
+          {u.fullName} ({u.email})
+        </option>
+      ))}
+    </select>
+
+    <button
+      className="td-add-btn"
+      disabled={!selectedUserId || addingMember}
+      onClick={async () => {
+        await teamService.addMember(id, selectedUserId);
+        setSelectedUserId('');
+        fetchTeam();
+      }}
+    >
+      + Add Member
+    </button>
+  </div>
+)}    
 
           {memberError && (
             <div className="td-member-error">{memberError}</div>
