@@ -28,23 +28,28 @@ export default function Dashboard() {
       requestService.getAllRequests(),
     ]);
 
-    // backend returns { success:true, data:[...] }
     const equipment = equipmentRes?.data || [];
     const teams = teamsRes?.data || [];
-    const requests = requestsRes?.data || []; // important
+    const requests = requestsRes?.data || [];
 
-    // Active = not Repaired and not Scrapped
     const activeRequests = requests.filter(
       (r) => !['Repaired', 'Scrapped'].includes(r.status)
     ).length;
 
-    // Completed = Repaired this month
     const now = new Date();
     const completedThisMonth = requests.filter((r) => {
       if (r.status !== 'Repaired') return false;
       const d = new Date(r.updatedAt || r.completedDate || r.createdAt);
       return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
     }).length;
+
+    // ✅ add this
+    const counts = { New: 0, Assigned: 0, 'In Progress': 0, Repaired: 0, Scrapped: 0 };
+    requests.forEach((r) => {
+      const s = r.status;
+      if (counts[s] !== undefined) counts[s] += 1;
+    });
+    setStatusCounts(counts);
 
     setStats({
       totalEquipment: equipment.length,
@@ -114,6 +119,14 @@ export default function Dashboard() {
     { label: 'Calendar', icon: '📅', path: '/calendar' },
     { label: 'Reports', icon: '📊', path: '/reports' },
   ];
+
+  const [statusCounts, setStatusCounts] = useState({
+  New: 0,
+  Assigned: 0,
+  'In Progress': 0,
+  Repaired: 0,
+  Scrapped: 0,
+});
 
   return (
     <>
@@ -633,11 +646,11 @@ export default function Dashboard() {
                   <div className="db-section-body">
                     <div className="db-status-list">
                       {[
-                        { label: 'New', color: '#3b82f6', count: 0 },
-                        { label: 'Assigned', color: '#f0a500', count: 0 },
-                        { label: 'In Progress', color: '#8b5cf6', count: 0 },
-                        { label: 'Repaired', color: '#10b981', count: 0 },
-                        { label: 'Scrapped', color: '#ef4444', count: 0 },
+                         { label: 'New', color: '#3b82f6', count: statusCounts.New },
+                        { label: 'Assigned', color: '#f0a500', count: statusCounts.Assigned },
+                        { label: 'In Progress', color: '#8b5cf6', count: statusCounts['In Progress'] },
+                        { label: 'Repaired', color: '#10b981', count: statusCounts.Repaired },
+                        { label: 'Scrapped', color: '#ef4444', count: statusCounts.Scrapped },
                       ].map((s) => (
                         <div key={s.label} className="db-status-row">
                           <div className="db-status-label">
