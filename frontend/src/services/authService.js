@@ -21,6 +21,7 @@ const saveAuth = (token, user) => {
 const clearAuth = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
+  localStorage.removeItem('role');
 };
 
 // ─── REGISTER ──────────────────────────────────────────────────────────────

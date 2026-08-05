@@ -7,6 +7,8 @@ import requestService from '../services/requestService';
 export default function Dashboard() {
   const role = localStorage.getItem("role");
   const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+
   const [stats, setStats] = useState({
     totalEquipment: 0,
     activeRequests: 0,
@@ -14,7 +16,14 @@ export default function Dashboard() {
     completed: 0,
   });
   const [loading, setLoading] = useState(true);
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const [statusCounts, setStatusCounts] = useState({
+    New: 0,
+    Assigned: 0,
+    'In Progress': 0,
+    Repaired: 0,
+    Scrapped: 0,
+  });
+  const [recentRequests, setRecentRequests] = useState([]);
 
   useEffect(() => {
     fetchStats();
@@ -82,6 +91,7 @@ export default function Dashboard() {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('role');
     navigate('/login');
   };
 
@@ -136,16 +146,6 @@ export default function Dashboard() {
     { label: 'Reports', icon: '📊', path: '/reports' },
   ];
 
-  const [statusCounts, setStatusCounts] = useState({
-  New: 0,
-  Assigned: 0,
-  'In Progress': 0,
-  Repaired: 0,
-  Scrapped: 0,
-});
-
-  const [recentRequests, setRecentRequests] = useState([]);
-  
   return (
     <>
       <style>{`

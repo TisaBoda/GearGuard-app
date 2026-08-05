@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-
+import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
@@ -32,7 +32,8 @@ function App() {
         <Route path="/unauthorized" element={<Unauthorized />} />
 
         {/* PUBLIC ROUTES */}
-        <Route path="/" element={<Navigate to="/login" />} />
+        {/* <Route path="/" element={<Navigate to="/login" />} /> */}
+        <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
@@ -123,6 +124,17 @@ function App() {
           }
         />
 
+        {/* 🔒 KANBAN (ADMIN / MANAGER ONLY) */}
+        <Route
+          path="/requests/kanban"
+          element={
+            <RoleProtectedRoute
+              element={<KanbanBoard />}
+              allowedRoles={['Admin','Manager']}
+            />
+          }
+        />
+
         {/* 👤 REQUESTS (ALL USERS) */}
         <Route
           path="/requests"
@@ -157,17 +169,6 @@ function App() {
             <RoleProtectedRoute
               element={<RequestDetails />}
               allowedRoles={['Admin','Manager','Technician','Viewer']}
-            />
-          }
-        />
-
-        {/* 🔒 KANBAN (ADMIN / MANAGER ONLY) */}
-        <Route
-          path="/requests/kanban"
-          element={
-            <RoleProtectedRoute
-              element={<KanbanBoard />}
-              allowedRoles={['Admin','Manager']}
             />
           }
         />

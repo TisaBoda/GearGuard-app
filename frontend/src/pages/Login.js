@@ -45,27 +45,12 @@ export default function Login() {
   setLoading(true);
 
   try {
-    const res = await authService.login(form.email, form.password);
-
-    console.log("LOGIN RESPONSE:", res.data);
-
-    const role =
-  res?.data?.user?.role ||
-  res?.data?.role ||
-  res?.data?.data?.user?.role ||
-  res?.user?.role ||
-  "Viewer";   // fallback
-
-    localStorage.setItem("role", role);
-    localStorage.setItem("token", res?.data?.token || res?.token);
-
+    await authService.login(form.email, form.password);
     window.location.href = '/dashboard';
-
   } catch (err) {
     setError(err.message || "Invalid credentials.");
+    setLoading(false);
   }
-
-  setLoading(false);
 };
 
   return (

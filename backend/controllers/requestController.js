@@ -104,7 +104,7 @@ const createRequest = async (req, res) => {
       priority,
       status: status || 'New',
       scheduledDate: scheduledDate || undefined,
-      image: imagePath,
+      imageUrl: imagePath,
       createdBy: req.user._id,
     });
 
