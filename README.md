@@ -307,14 +307,14 @@ GearGuard-APP/
 
 | Feature | Admin | Manager | Technician | Viewer |
 |---------|-------|---------|------------|--------|
-| Create/Edit Equipment | ✅ | ✅ | ❌ | ❌ |
-| Delete Equipment | ✅ | ❌ | ❌ | ❌ |
-| Create/Edit Teams | ✅ | ✅ | ❌ | ❌ |
-| Create Requests | ✅ | ✅ | ✅ | ❌ |
-| Update Request Status | ✅ | ✅ | ✅ | ❌ |
-| View Kanban Board | ✅ | ✅ | ❌ | ❌ |
-| View Reports | ✅ | ❌ | ❌ | ❌ |
-| Create Users | ✅ | ✅ | ❌ | ❌ |
+| Create/Edit Equipment | Yes | Yes | No | No |
+| Delete Equipment | Yes | No | No | No |
+| Create/Edit Teams | Yes | Yes | No | No |
+| Create Requests | Yes | Yes | Yes | No |
+| Update Request Status | Yes | Yes | Yes | No |
+| View Kanban Board | Yes | Yes | No | No |
+| View Reports | Yes | No | No | No |
+| Create Users | Yes | Yes | No | No |
 
 ---
 
@@ -361,14 +361,14 @@ npm start      # starts on http://localhost:3000
 
 ## Development Phases
 
-### Phase 1: Project Setup ✅
+### Phase 1: Project Setup 
 - [x] Git repository initialized
 - [x] React frontend created
 - [x] Node.js backend created
 - [x] MongoDB Atlas connected
 - [x] Folder structure created
 
-### Phase 2: Authentication ✅
+### Phase 2: Authentication 
 - [x] User model with bcrypt password hashing
 - [x] Register & Login API with JWT
 - [x] Login page
@@ -376,45 +376,45 @@ npm start      # starts on http://localhost:3000
 - [x] Protected routes with role guard
 - [x] 4 user roles (Admin, Manager, Technician, Viewer)
 
-### Phase 3: Equipment Module ✅
+### Phase 3: Equipment Module 
 - [x] Equipment model & CRUD API
 - [x] Equipment List with search & filters
 - [x] Add/Edit Equipment form
 - [x] Equipment Details page
 
-### Phase 4: Team Module ✅
+### Phase 4: Team Module 
 - [x] Team model & CRUD API
 - [x] Add/Remove members endpoint
 - [x] Team List, Form, Details pages
 
-### Phase 5: Maintenance Request System ✅
+### Phase 5: Maintenance Request System 
 - [x] MaintenanceRequest model & CRUD API
 - [x] Auto-fill team from equipment
 - [x] Status update endpoint
 - [x] Request List, Form, Details pages
 - [x] Image upload for damage photos
 
-### Phase 6: Kanban Board ✅
+### Phase 6: Kanban Board 
 - [x] Kanban Board with @hello-pangea/dnd
 - [x] Columns: New | Assigned | In Progress | Repaired | Scrapped
 - [x] Drag-and-drop updates status via API
 - [x] Overdue pulse animation
 - [x] Search filter
 
-### Phase 7: Calendar View & Dashboard ✅
+### Phase 7: Calendar View & Dashboard 
 - [x] Calendar View showing scheduled requests
 - [x] Dashboard with stat cards
 - [x] Recent requests feed
 - [x] Request status overview with progress bars
 
-### Phase 8: Smart Features ✅
+### Phase 8: Smart Features 
 - [x] Auto-fill team on request form
 - [x] Overdue detection logic
 - [x] Red overdue indicator on Kanban cards
 - [x] Role-based sidebar navigation
 - [x] Admin user creation page
 
-### Phase 9: Reports ✅
+### Phase 9: Reports 
 - [x] Reports page with charts
 - [x] Requests per team
 - [x] Requests per equipment category
