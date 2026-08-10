@@ -9,6 +9,9 @@ export default function RequestList() {
   const [error, setError] = useState('');
   const [filter, setFilter] = useState('All');
   const navigate = useNavigate();
+  const role = localStorage.getItem('role');
+  const canEdit = ['Admin', 'Manager', 'Technician'].includes(role);
+  const canDelete = ['Admin', 'Manager'].includes(role);
 
   
   const location = useLocation();
@@ -449,14 +452,18 @@ const equipmentId = new URLSearchParams(location.search).get('equipmentId');
                             className="rl-view-btn"
                             onClick={() => navigate(`/requests/${req._id}`)}
                           >View</button>
-                          <button
-                            className="rl-edit-btn"
-                            onClick={() => navigate(`/requests/edit/${req._id}`)}
-                          >Edit</button>
-                          <button
-                            className="rl-del-btn"
-                            onClick={() => handleDelete(req._id)}
-                          >Del</button>
+                          {canEdit && (
+                            <button
+                              className="rl-edit-btn"
+                              onClick={() => navigate(`/requests/edit/${req._id}`)}
+                            >Edit</button>
+                          )}
+                          {canDelete && (
+                            <button
+                              className="rl-del-btn"
+                              onClick={() => handleDelete(req._id)}
+                            >Del</button>
+                          )}
                         </div>
                       </td>
                     </tr>

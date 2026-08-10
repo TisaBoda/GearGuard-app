@@ -1,35 +1,24 @@
 const express = require('express');
 const router = express.Router();
-
 const upload = require('../middleware/upload');
 const { protect } = require('../middleware/authMiddleware');
-
+const { authorize } = require('../middleware/roleMiddleware');
 const {
-  getAllRequests,
-  getRequestById,
-  createRequest,
-  updateRequest,
-  deleteRequest,
-  updateStatus,
+  getAllRequests, getRequestById,
+  createRequest, updateRequest,
+  deleteRequest, updateStatus,
   getCalendarRequests,
 } = require('../controllers/requestController');
 
-// Calendar route (before /:id to avoid conflict)
 router.get('/calendar', protect, getCalendarRequests);
 
-// Single correct main route (multer attached)
-router.route('/')
-  .get(protect, getAllRequests)
-  .post(protect, upload.single('image'), createRequest);
-  
-// Single ID route
-router.route('/:id')
-  .get(protect, getRequestById)
-  .put(protect, upload.single('image'), updateRequest)
-  // .put(protect, updateRequest)          // (no image on update unless you add upload.single here)
-  .delete(protect, deleteRequest);
+router.get('/', protect, getAllRequests);
+router.post('/', protect, authorize('Admin', 'Manager', 'Technician'), upload.single('image'), createRequest);
 
-// Status update
-router.patch('/:id/status', protect, updateStatus);
+router.get('/:id', protect, getRequestById);
+router.put('/:id', protect, authorize('Admin', 'Manager', 'Technician'), upload.single('image'), updateRequest);
+router.delete('/:id', protect, authorize('Admin', 'Manager'), deleteRequest);
+
+router.patch('/:id/status', protect, authorize('Admin', 'Manager', 'Technician'), updateStatus);
 
 module.exports = router;

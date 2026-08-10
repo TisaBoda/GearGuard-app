@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import equipmentService from '../../services/equipmentService';
 
 const CATEGORIES = ['All', 'Computer', 'Vehicle', 'Machine', 'Office Equipment', 'Other'];
@@ -10,6 +11,7 @@ export default function EquipmentList() {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
   const [status, setStatus] = useState('All');
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchEquipment();
@@ -77,7 +79,7 @@ export default function EquipmentList() {
       <div className="el-root">
         <div className="el-header">
           <div className="el-title">Equipment <span>List</span></div>
-          <button className="el-btn" onClick={() => window.location.href = '/equipment/new'}>
+          <button className="el-btn" onClick={() => navigate('/equipment/new')}>
             + Add Equipment
           </button>
         </div>
@@ -129,8 +131,8 @@ export default function EquipmentList() {
                       </span>
                     </td>
                     <td>
-                      <button className="el-action" onClick={() => window.location.href = `/equipment/${eq._id || eq.id}`}>View</button>
-                      <button className="el-action" onClick={() => window.location.href = `/equipment/edit/${eq._id || eq.id}`}>Edit</button>
+                      <button className="el-action" onClick={() => navigate(`/equipment/${eq._id || eq.id}`)}>View</button>
+                      <button className="el-action" onClick={() => navigate(`/equipment/edit/${eq._id || eq.id}`)}>Edit</button>
                       <button className="el-action del" onClick={() => handleDelete(eq._id || eq.id)}>Delete</button>
                     </td>
                   </tr>

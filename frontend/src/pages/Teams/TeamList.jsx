@@ -200,6 +200,10 @@ export default function TeamList() {
           color: #2a2a2a;
           margin-bottom: 12px;
         }
+        .tl-actions {
+          display: flex;
+          gap: 12px;
+        }
         .tl-loading {
           text-align: center;
           padding: 80px;

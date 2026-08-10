@@ -42,17 +42,17 @@
 4. Technician records repair duration and costs
 
 ### 4. Interactive Views
-- **Kanban Board**: Native drag-and-drop request cards between stages with overdue indicators
-- **Calendar View**: Visual scheduling for preventive maintenance
-- **Dashboard**: Real-time statistics, recent requests, status overview
-- **Reports**: Analytics on requests by team/equipment category
+- **Kanban Board**: Native HTML5 drag-and-drop request cards between stages with overdue indicators — accessible from Dashboard Quick Actions (Admin/Manager only)
+- **Calendar View**: Monthly grid calendar showing scheduled requests by date, with navigation and clickable events
+- **Dashboard**: Real-time statistics, recent requests, status overview, Quick Actions panel (role-filtered)
+- **Reports**: Analytics on requests by status, priority, type, and team
 
 ### 5. Smart Features
 - Auto-fill team when equipment is selected on request form
 - Overdue request detection and red pulse animation
-- Image upload for damage photos on requests
-- Role-based access control (Admin, Manager, Technician, Viewer)
-- Admin can create users directly
+- Image upload for damage photos on requests (stored via Multer, displayed in request details)
+- Two-layer Role-based access control — frontend route guards + backend API authorization
+- Admin/Manager can create user accounts directly
 
 ---
 
@@ -62,14 +62,13 @@
 - **Framework**: React.js 19
 - **Routing**: React Router DOM v7
 - **HTTP Client**: Axios
-- **Drag & Drop**: @hello-pangea/dnd
 - **Styling**: Custom inline CSS (no UI library)
 - **State**: useState / useEffect hooks + localStorage
 
 ### Backend
 - **Runtime**: Node.js
 - **Framework**: Express.js
-- **Authentication**: JWT (JSON Web Tokens)
+- **Authentication**: JWT (JSON Web Tokens) + bcryptjs
 - **File Upload**: Multer
 
 ### Database
@@ -90,12 +89,12 @@ GearGuard-APP/
 │   ├── public/
 │   └── src/
 │       ├── components/
-│       │   └── ProtectedRoute.js        # Auth + role guard
+│       │   └── ProtectedRoute.js        # Auth guard + RoleProtectedRoute
 │       ├── pages/
 │       │   ├── Landing.jsx              # Public landing page
 │       │   ├── Login.js
 │       │   ├── Register.js
-│       │   ├── Dashboard.jsx
+│       │   ├── Dashboard.jsx            # Stats, Quick Actions, Recent Requests
 │       │   ├── Unauthorized.jsx
 │       │   ├── Equipment/
 │       │   │   ├── EquipmentList.js
@@ -109,12 +108,12 @@ GearGuard-APP/
 │       │   │   ├── RequestList.jsx
 │       │   │   ├── RequestForm.jsx
 │       │   │   ├── RequestDetails.jsx
-│       │   │   ├── KanbanBoard.jsx
-│       │   │   └── CalendarView.jsx
+│       │   │   ├── KanbanBoard.jsx      # Native HTML5 drag-and-drop
+│       │   │   └── CalendarView.jsx     # Monthly grid calendar
 │       │   ├── Reports/
 │       │   │   └── ReportsPage.jsx
 │       │   └── user/
-│       │       └── createUser.jsx       # Admin creates users
+│       │       └── createUser.jsx       # Admin/Manager creates users
 │       ├── services/
 │       │   ├── authService.js
 │       │   ├── equipmentService.js
@@ -239,39 +238,39 @@ GearGuard-APP/
 | POST | `/api/auth/register` | Public | Register new user |
 | POST | `/api/auth/login` | Public | Login, returns JWT |
 | GET | `/api/auth/me` | Protected | Get current user |
-| GET | `/api/auth/users` | Admin/Manager | List all users (filter by role) |
-| POST | `/api/auth/create-user` | Admin/Manager | Create a user account |
+| GET | `/api/auth/users` | Admin, Manager | List all users |
+| POST | `/api/auth/create-user` | Admin, Manager | Create a user account |
 
 ### Equipment
 | Method | Endpoint | Access | Description |
 |--------|----------|--------|-------------|
-| GET | `/api/equipment` | Protected | Get all equipment (filter: category, status, department) |
-| GET | `/api/equipment/:id` | Protected | Get single equipment |
-| POST | `/api/equipment` | Protected | Create equipment |
-| PUT | `/api/equipment/:id` | Protected | Update equipment |
-| DELETE | `/api/equipment/:id` | Protected | Delete equipment |
+| GET | `/api/equipment` | All logged-in | Get all equipment (filter: category, status) |
+| GET | `/api/equipment/:id` | All logged-in | Get single equipment |
+| POST | `/api/equipment` | Admin, Manager | Create equipment |
+| PUT | `/api/equipment/:id` | Admin, Manager | Update equipment |
+| DELETE | `/api/equipment/:id` | Admin only | Delete equipment |
 
 ### Teams
 | Method | Endpoint | Access | Description |
 |--------|----------|--------|-------------|
-| GET | `/api/teams` | Protected | Get all teams |
-| GET | `/api/teams/:id` | Protected | Get single team with members |
-| POST | `/api/teams` | Protected | Create team |
-| PUT | `/api/teams/:id` | Protected | Update team |
-| DELETE | `/api/teams/:id` | Protected | Delete team |
-| POST | `/api/teams/:id/members` | Protected | Add member to team |
-| DELETE | `/api/teams/:id/members/:userId` | Protected | Remove member from team |
+| GET | `/api/teams` | All logged-in | Get all teams |
+| GET | `/api/teams/:id` | All logged-in | Get single team with members |
+| POST | `/api/teams` | Admin, Manager | Create team |
+| PUT | `/api/teams/:id` | Admin, Manager | Update team |
+| DELETE | `/api/teams/:id` | Admin, Manager | Delete team |
+| POST | `/api/teams/:id/members` | Admin, Manager | Add member to team |
+| DELETE | `/api/teams/:id/members/:userId` | Admin, Manager | Remove member from team |
 
 ### Maintenance Requests
 | Method | Endpoint | Access | Description |
 |--------|----------|--------|-------------|
-| GET | `/api/requests` | Protected | Get all requests (filter: equipmentId, openOnly) |
-| GET | `/api/requests/calendar` | Protected | Get requests with scheduledDate |
-| GET | `/api/requests/:id` | Protected | Get single request |
-| POST | `/api/requests` | Protected | Create request (multipart/form-data, supports image) |
-| PUT | `/api/requests/:id` | Protected | Update request (multipart/form-data) |
-| DELETE | `/api/requests/:id` | Protected | Delete request |
-| PATCH | `/api/requests/:id/status` | Protected | Update status only |
+| GET | `/api/requests` | All logged-in | Get all requests (filter: equipmentId, openOnly) |
+| GET | `/api/requests/calendar` | All logged-in | Get requests with scheduledDate |
+| GET | `/api/requests/:id` | All logged-in | Get single request |
+| POST | `/api/requests` | Admin, Manager, Technician | Create request (multipart/form-data, supports image) |
+| PUT | `/api/requests/:id` | Admin, Manager, Technician | Update request |
+| DELETE | `/api/requests/:id` | Admin, Manager | Delete request |
+| PATCH | `/api/requests/:id/status` | Admin, Manager, Technician | Update status only |
 
 ---
 
@@ -282,6 +281,7 @@ GearGuard-APP/
 | `/` | Landing | Public |
 | `/login` | Login | Public |
 | `/register` | Register | Public |
+| `/unauthorized` | Unauthorized | Public |
 | `/dashboard` | Dashboard | All logged-in users |
 | `/equipment` | Equipment List | Admin, Manager |
 | `/equipment/new` | Add Equipment | Admin, Manager |
@@ -293,13 +293,12 @@ GearGuard-APP/
 | `/teams/:id` | Team Details | Admin, Manager |
 | `/requests` | Request List | All logged-in users |
 | `/requests/kanban` | Kanban Board | Admin, Manager |
-| `/requests/new` | New Request | All logged-in users |
-| `/requests/edit/:id` | Edit Request | All logged-in users |
+| `/requests/new` | New Request | Admin, Manager, Technician |
+| `/requests/edit/:id` | Edit Request | Admin, Manager, Technician |
 | `/requests/:id` | Request Details | All logged-in users |
 | `/calendar` | Calendar View | All logged-in users |
 | `/reports` | Reports | Admin only |
 | `/users/new` | Create User | Admin, Manager |
-| `/unauthorized` | Unauthorized | Public |
 
 ---
 
@@ -307,14 +306,20 @@ GearGuard-APP/
 
 | Feature | Admin | Manager | Technician | Viewer |
 |---------|-------|---------|------------|--------|
-| Create/Edit Equipment | Yes | Yes | No | No |
-| Delete Equipment | Yes | No | No | No |
-| Create/Edit Teams | Yes | Yes | No | No |
-| Create Requests | Yes | Yes | Yes | No |
-| Update Request Status | Yes | Yes | Yes | No |
-| View Kanban Board | Yes | Yes | No | No |
-| View Reports | Yes | No | No | No |
-| Create Users | Yes | Yes | No | No |
+| View Equipment & Teams | ✅ | ✅ | ❌ | ❌ |
+| Create / Edit Equipment | ✅ | ✅ | ❌ | ❌ |
+| Delete Equipment | ✅ | ❌ | ❌ | ❌ |
+| Create / Edit / Delete Teams | ✅ | ✅ | ❌ | ❌ |
+| View Requests | ✅ | ✅ | ✅ | ✅ |
+| Create / Edit Requests | ✅ | ✅ | ✅ | ❌ |
+| Delete Requests | ✅ | ✅ | ❌ | ❌ |
+| Update Request Status | ✅ | ✅ | ✅ | ❌ |
+| View Kanban Board | ✅ | ✅ | ❌ | ❌ |
+| View Calendar | ✅ | ✅ | ✅ | ✅ |
+| View Reports | ✅ | ❌ | ❌ | ❌ |
+| Create Users | ✅ | ✅ | ❌ | ❌ |
+
+> RBAC is enforced at two layers: frontend route guards (`RoleProtectedRoute`) redirect unauthorized users to `/unauthorized`, and backend API middleware (`authorize`) returns `403 Forbidden` even if the UI is bypassed.
 
 ---
 
@@ -361,14 +366,14 @@ npm start      # starts on http://localhost:3000
 
 ## Development Phases
 
-### Phase 1: Project Setup 
+### Phase 1: Project Setup
 - [x] Git repository initialized
 - [x] React frontend created
 - [x] Node.js backend created
 - [x] MongoDB Atlas connected
 - [x] Folder structure created
 
-### Phase 2: Authentication 
+### Phase 2: Authentication
 - [x] User model with bcrypt password hashing
 - [x] Register & Login API with JWT
 - [x] Login page
@@ -376,48 +381,60 @@ npm start      # starts on http://localhost:3000
 - [x] Protected routes with role guard
 - [x] 4 user roles (Admin, Manager, Technician, Viewer)
 
-### Phase 3: Equipment Module 
+### Phase 3: Equipment Module
 - [x] Equipment model & CRUD API
 - [x] Equipment List with search & filters
 - [x] Add/Edit Equipment form
 - [x] Equipment Details page
 
-### Phase 4: Team Module 
+### Phase 4: Team Module
 - [x] Team model & CRUD API
 - [x] Add/Remove members endpoint
 - [x] Team List, Form, Details pages
 
-### Phase 5: Maintenance Request System 
+### Phase 5: Maintenance Request System
 - [x] MaintenanceRequest model & CRUD API
 - [x] Auto-fill team from equipment
 - [x] Status update endpoint
 - [x] Request List, Form, Details pages
-- [x] Image upload for damage photos
+- [x] Image upload for damage photos (Multer + static serving)
 
-### Phase 6: Kanban Board 
-- [x] Kanban Board with @hello-pangea/dnd
+### Phase 6: Kanban Board
+- [x] Kanban Board with native HTML5 drag-and-drop
 - [x] Columns: New | Assigned | In Progress | Repaired | Scrapped
-- [x] Drag-and-drop updates status via API
+- [x] Drag-and-drop updates status via API instantly
 - [x] Overdue pulse animation
 - [x] Search filter
+- [x] Accessible via Dashboard Quick Actions (Admin/Manager)
 
-### Phase 7: Calendar View & Dashboard 
-- [x] Calendar View showing scheduled requests
+### Phase 7: Calendar View & Dashboard
+- [x] Monthly grid Calendar View with navigation
+- [x] Clickable request events on calendar
 - [x] Dashboard with stat cards
 - [x] Recent requests feed
 - [x] Request status overview with progress bars
+- [x] Quick Actions panel (role-filtered)
 
-### Phase 8: Smart Features 
+### Phase 8: Smart Features
 - [x] Auto-fill team on request form
 - [x] Overdue detection logic
-- [x] Red overdue indicator on Kanban cards
+- [x] Red overdue indicator on Kanban cards and Request List
 - [x] Role-based sidebar navigation
-- [x] Admin user creation page
+- [x] Admin/Manager user creation page
+- [x] Damage photo display in Request Details
 
-### Phase 9: Reports 
-- [x] Reports page with charts
-- [x] Requests per team
-- [x] Requests per equipment category
+### Phase 9: Reports
+- [x] Reports page with bar charts
+- [x] Requests by status, priority, type, and team
+
+### Phase 10: RBAC & Bug Fixes
+- [x] Backend API authorization on all routes (equipment, teams, requests)
+- [x] Frontend action buttons hidden based on role (Edit/Delete)
+- [x] Fixed damage image not displaying (imageUrl field mapping)
+- [x] Fixed EquipmentList using window.location.href → useNavigate
+- [x] Fixed CalendarView rebuilt as proper monthly grid
+- [x] Fixed TeamList button spacing
+- [x] Fixed RequestDetails response unwrapping
 
 ---
 
@@ -442,4 +459,4 @@ This project is for educational purposes — Advanced Web Technology course proj
 
 ---
 
-**Status**: Completed 
+**Status**: Completed

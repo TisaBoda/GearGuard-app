@@ -1,25 +1,20 @@
 const express = require('express');
 const router = express.Router();
 const {
-  getAllTeams,
-  getTeamById,
-  createTeam,
-  updateTeam,
-  deleteTeam,
-  addMember,
-  removeMember,
+  getAllTeams, getTeamById,
+  createTeam, updateTeam, deleteTeam,
+  addMember, removeMember,
 } = require('../controllers/teamController');
 const { protect } = require('../middleware/authMiddleware');
+const { authorize } = require('../middleware/roleMiddleware');
 
-router.route('/').get(protect, getAllTeams).post(protect, createTeam);
+router.get('/', protect, getAllTeams);
+router.get('/:id', protect, getTeamById);
+router.post('/', protect, authorize('Admin', 'Manager'), createTeam);
+router.put('/:id', protect, authorize('Admin', 'Manager'), updateTeam);
+router.delete('/:id', protect, authorize('Admin', 'Manager'), deleteTeam);
 
-router
-  .route('/:id')
-  .get(protect, getTeamById)
-  .put(protect, updateTeam)
-  .delete(protect, deleteTeam);
-
-router.route('/:id/members').post(protect, addMember);
-router.route('/:id/members/:userId').delete(protect, removeMember);
+router.post('/:id/members', protect, authorize('Admin', 'Manager'), addMember);
+router.delete('/:id/members/:userId', protect, authorize('Admin', 'Manager'), removeMember);
 
 module.exports = router;

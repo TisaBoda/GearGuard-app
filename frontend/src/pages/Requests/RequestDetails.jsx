@@ -10,12 +10,17 @@ export default function RequestDetails() {
   const [error, setError] = useState('');
   const [updating, setUpdating] = useState(false);
 
+  const role = localStorage.getItem('role');
+  const canEdit = ['Admin', 'Manager', 'Technician'].includes(role);
+  const canDelete = ['Admin', 'Manager'].includes(role);
+
   useEffect(() => { fetchRequest(); }, [id]);
 
 const fetchRequest = async () => {
   try {
     const res = await requestService.getRequestById(id);
-    const reqObj = res?.data ? res.data : res; // ✅ handle both shapes
+    // backend returns { success, data: {...request} }
+    const reqObj = res?.data?.data ?? res?.data ?? res;
     setRequest(reqObj);
   } catch {
     setError('Failed to load request details');
@@ -386,13 +391,17 @@ const fetchRequest = async () => {
               </div>
             </div>
             <div className="rd-banner-actions">
-              <button
-                className="rd-edit-btn"
-                onClick={() => navigate(`/requests/edit/${id}`)}
-              >✏️ Edit</button>
-              <button className="rd-del-btn" onClick={handleDelete}>
-                🗑️ Delete
-              </button>
+              {canEdit && (
+                <button
+                  className="rd-edit-btn"
+                  onClick={() => navigate(`/requests/edit/${id}`)}
+                >✏️ Edit</button>
+              )}
+              {canDelete && (
+                <button className="rd-del-btn" onClick={handleDelete}>
+                  🗑️ Delete
+                </button>
+              )}
             </div>
           </div>
 
@@ -446,14 +455,13 @@ const fetchRequest = async () => {
               <p className="rd-desc-text">{request.description}</p>
             </div>
           )}
-          {request?.image && (
+          {request?.imageUrl && (
   <div className="rd-desc-section" style={{ paddingTop: 0 }}>
     <div className="rd-info-label" style={{ marginBottom: '8px' }}>
       Damage Photo
     </div>
-
     <img
-      src={`http://localhost:5000${request.image}`}
+      src={`http://localhost:5000${request.imageUrl}`}
       alt="Damage"
       style={{
         width: '100%',
@@ -500,7 +508,9 @@ const fetchRequest = async () => {
 
             {/* Next Action Buttons */}
             <div className="rd-next-actions">
-              {nextStatuses[request?.status]?.length === 0 ? (
+              {!canEdit ? (
+                <div className="rd-completed-msg" style={{ color: '#555' }}>👁 View only</div>
+              ) : nextStatuses[request?.status]?.length === 0 ? (
                 <div className="rd-completed-msg">
                   ✅ Request {request?.status} — No further actions needed
                 </div>

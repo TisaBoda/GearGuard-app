@@ -131,10 +131,11 @@ export default function Dashboard() {
   ];
 
   const quickActions = [
-    { label: 'Add Equipment', icon: '🔧', path: '/equipment/new', color: '#3b82f6' },
-    { label: 'New Request', icon: '📋', path: '/requests/new', color: '#f0a500' },
-    { label: 'Create Team', icon: '👥', path: '/teams/new', color: '#10b981' },
-    { label: 'View Reports', icon: '📊', path: '/reports', color: '#8b5cf6' },
+    { label: 'Add Equipment', icon: '🔧', path: '/equipment/new', color: '#3b82f6', roles: ['Admin', 'Manager'] },
+    { label: 'New Request', icon: '📋', path: '/requests/new', color: '#f0a500', roles: ['Admin', 'Manager', 'Technician', 'Viewer'] },
+    { label: 'Create Team', icon: '👥', path: '/teams/new', color: '#10b981', roles: ['Admin', 'Manager'] },
+    { label: 'Kanban Board', icon: '📌', path: '/requests/kanban', color: '#e879f9', roles: ['Admin', 'Manager'] },
+    { label: 'View Reports', icon: '📊', path: '/reports', color: '#8b5cf6', roles: ['Admin'] },
   ];
 
   const navItems = [
@@ -635,6 +636,30 @@ export default function Dashboard() {
                   </div>
                 ))}
               </div>
+
+              {/* Quick Actions */}
+              {quickActions.filter(a => a.roles.includes(role)).length > 0 && (
+                <div className="db-section-card" style={{ marginBottom: 20 }}>
+                  <div className="db-section-header">⚡ Quick Actions</div>
+                  <div className="db-section-body">
+                    <div className="db-quick-actions">
+                      {quickActions
+                        .filter(a => a.roles.includes(role))
+                        .map(a => (
+                          <button
+                            key={a.path}
+                            className="db-quick-btn"
+                            style={{ '--btn-color': a.color }}
+                            onClick={() => navigate(a.path)}
+                          >
+                            <div className="db-quick-icon">{a.icon}</div>
+                            <div className="db-quick-label">{a.label}</div>
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Bottom Grid */}
               <div className="db-bottom-grid">
